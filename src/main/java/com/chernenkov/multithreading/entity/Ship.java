@@ -39,25 +39,38 @@ public class Ship implements Runnable {
         Port port = Port.getInstance();
         Pier pier = null;
         pier = port.getPier();
+        int timeForGoToPier = 0;
         if (!(pier == null)) {
-            if (forLoading) {
-                port.loading(this.size, this.id);
-                currentCapacity = maxCapacity;
-                System.out.println("Current containers amount in port: " + port.getContainerAmount());
-            } else if (!forLoading) {
-                port.unloading(currentCapacity, this.id);
-                currentCapacity = 0;
-                System.out.println("Current containers amount in port: " + port.getContainerAmount());
+            System.out.println("The ship going to pier number" + pier.getId());
+            switch (pier.getId()) {
+                case 1:
+                    timeForGoToPier = 1000;
+                case 2:
+                    timeForGoToPier = 2000;
+                case 3:
+                    timeForGoToPier = 3000;
             }
             try {
-                Thread.sleep(3000);
+                Thread.sleep(timeForGoToPier);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            int timeForLoadingUnloading = 0;
+            if (currentCapacity == 0) {
+                timeForLoadingUnloading = this.maxCapacity * 30;
+            } else {
+                timeForLoadingUnloading = currentCapacity * 30;
+            }
+            currentCapacity = port.loadingUnloading(currentCapacity, id, size, forLoading);
+            try {
+                Thread.sleep(timeForLoadingUnloading);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
             port.addPier(pier);
         } else if (pier == null) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

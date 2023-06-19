@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Port {
     private static Port port;
     private int containerAmount;
-    private LinkedList<Pier> piers = new LinkedList<>();
+    private Queue<Pier> piers = new LinkedList<>();
     private static Lock lock = new ReentrantLock(true);
     private static AtomicBoolean isCreated = new AtomicBoolean(false);
     Random random = new Random();
@@ -61,24 +61,32 @@ public class Port {
         return pier;
     }
 
-    public void unloading(int amount, int id) {
-        increaseContainerAmount(amount);
-        train();
-        System.out.println("The ship with id" + id + " was unloaded by " + amount + " containers");
-    }
-
-    public int loading(Size size, int id) {
-        int amountForLoading = 0;
-        if (size == Size.SMALL) {
-            amountForLoading = random.nextInt(50);
-        } else if (size == Size.MEDIUM) {
-            amountForLoading = random.nextInt(100);
-        } else if (size == Size.BIG) {
-            amountForLoading = random.nextInt(150);
+    public int loadingUnloading(int amount, int id, Size size, boolean forLoading) {
+        lock.lock();
+        int amountForLoading;
+        try {
+            amountForLoading = 0;
+            if (forLoading) {
+                if (size == Size.SMALL) {
+                    amountForLoading = random.nextInt(50);
+                } else if (size == Size.MEDIUM) {
+                    amountForLoading = random.nextInt(100);
+                } else if (size == Size.BIG) {
+                    amountForLoading = random.nextInt(150);
+                }
+                decreaseContainerAmount(amountForLoading);
+                train();
+                System.out.println("The ship with id" + id + " was loaded by " + amountForLoading + " containers");
+                return amountForLoading;
+            } else if (!forLoading) {
+                increaseContainerAmount(amount);
+                train();
+                System.out.println("The ship with id" + id + " was unloaded by " + amount + " containers");
+                return 0;
+            }
+        } finally {
+            lock.unlock();
         }
-        decreaseContainerAmount(amountForLoading);
-        train();
-        System.out.println("The ship with id" + id + " was loaded by " + amountForLoading + " containers");
         return amountForLoading;
     }
 
