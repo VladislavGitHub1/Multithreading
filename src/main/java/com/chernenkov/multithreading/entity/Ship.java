@@ -2,6 +2,7 @@ package com.chernenkov.multithreading.entity;
 
 import com.chernenkov.multithreading.util.IdGenerator;
 
+import java.util.Objects;
 import java.util.Random;
 
 public class Ship implements Runnable {
@@ -58,5 +59,18 @@ public class Ship implements Runnable {
         sb.append(", forLoading=").append(forLoading);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Ship ship = (Ship) o;
+        return id == ship.id && maxCapacity == ship.maxCapacity && currentCapacity == ship.currentCapacity && forLoading == ship.forLoading && size == ship.size;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, maxCapacity, currentCapacity, size, forLoading);
     }
 }
