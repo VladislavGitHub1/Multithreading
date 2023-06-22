@@ -1,17 +1,22 @@
 package com.chernenkov.multithreading.entity;
 
 import com.chernenkov.multithreading.util.IdGenerator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 public class Ship implements Runnable {
+    static Logger logger = LogManager.getLogger();
     private int id;
     private int maxCapacity;
     private int currentCapacity;
     private Size size;
 
     private boolean forLoading;
+    public Semaphore semaphore;
 
     public Ship(int id,Size size, int maxCapacity, int currentCapacity, boolean forLoading) {
         this.id = id;
@@ -24,11 +29,12 @@ public class Ship implements Runnable {
     @Override
     public void run() {
         Port port = Port.getInstance();
-        Pier pier = null;
-        pier = port.getPier();
-        int timeForGoToPier = 0;
-            System.out.println("The ship going to pier number" + pier.getId());
-           timeForGoToPier = pier.getId() * 100;
+        try {
+            semaphore.acquire();
+            Pier pier = port.getPier();
+            int timeForGoToPier = 0;
+            logger.info("The ship with id " + this.id + " going to pier number " + pier.getId());
+            timeForGoToPier = pier.getId() * 100;
             try {
                 Thread.sleep(timeForGoToPier);
             } catch (InterruptedException e) {
@@ -47,6 +53,12 @@ public class Ship implements Runnable {
                 throw new RuntimeException(e);
             }
             port.addPier(pier);
+            semaphore.release();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 
     @Override

@@ -1,5 +1,8 @@
 package com.chernenkov.multithreading.entity;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -9,6 +12,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Port {
+    static Logger logger = LogManager.getLogger();
     private static Port port;
     private AtomicInteger containerAmount = new AtomicInteger(500);
     private Queue<Pier> piers = new LinkedList<>();
@@ -38,6 +42,10 @@ public class Port {
 
     public boolean addPier(Pier pier) {
         return piers.add(pier);
+    }
+
+    public Queue<Pier> getPiers() {
+        return piers;
     }
 
     public Pier getPier() {
@@ -76,14 +84,14 @@ public class Port {
                     containerAmount.decrementAndGet();
                 }
                 train();
-                System.out.println("The ship with id" + id + " was loaded by " + amountForLoading + " containers");
+                logger.info("The ship with id " + id + " was loaded by " + amountForLoading + " containers");
                 return amountForLoading;
             } else if (!forLoading) {
                 for (int i = 0; i < amountForLoading + 1; i++) {
                     containerAmount.incrementAndGet();
                 }
                 train();
-                System.out.println("The ship with id" + id + " was unloaded by " + amount + " containers");
+                logger.info("The ship with id " + id + " was unloaded by " + amount + " containers");
                 return 0;
             }
         } finally {
@@ -94,11 +102,15 @@ public class Port {
 
     private void train() {
         if (containerAmount.get() < 300) {
-            containerAmount.incrementAndGet();
-            System.out.println("The train put 200 containers");
+            while (containerAmount.get() < 500) {
+                containerAmount.incrementAndGet();
+            }
+            logger.info("The train put 200 containers");
         } else if (containerAmount.get() > 3000) {
-            containerAmount.decrementAndGet();
-            System.out.println("The train take 200 containers");
+            while (containerAmount.get()>2500) {
+                containerAmount.decrementAndGet();
+            }
+            logger.info("The train take 200 containers");
         }
     }
 
@@ -107,7 +119,7 @@ public class Port {
             @Override
             public void run() {
                 while (true) {
-                    System.out.println("Now in port " + port.getContainerAmount() + " containers");
+                    logger.info("Now in port " + port.getContainerAmount() + " containers");
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
