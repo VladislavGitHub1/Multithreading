@@ -68,9 +68,7 @@ public class Port {
     }
 
     public int loadingUnloading(int amount, int id, Size size, boolean forLoading) {
-        lock.lock();
         int amountForLoading;
-        try {
             amountForLoading = 0;
             if (forLoading) {
                 if (size == Size.SMALL) {
@@ -94,9 +92,6 @@ public class Port {
                 logger.info("The ship with id " + id + " was unloaded by " + amount + " containers");
                 return 0;
             }
-        } finally {
-            lock.unlock();
-        }
         return amountForLoading;
     }
 
