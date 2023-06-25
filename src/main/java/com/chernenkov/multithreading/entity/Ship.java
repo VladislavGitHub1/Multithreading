@@ -1,11 +1,10 @@
 package com.chernenkov.multithreading.entity;
 
-import com.chernenkov.multithreading.util.IdGenerator;
+import com.chernenkov.multithreading.exception.CustomPortException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class Ship implements Runnable {
@@ -57,7 +56,6 @@ public class Ship implements Runnable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
 
     }
 

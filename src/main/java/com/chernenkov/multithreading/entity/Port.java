@@ -20,6 +20,9 @@ public class Port {
     private static AtomicBoolean isCreated = new AtomicBoolean(false);
     Random random = new Random();
 
+    private Port() {
+    }
+
     public static Port getInstance() {
         if (port == null) {
             try {
@@ -69,42 +72,34 @@ public class Port {
 
     public int loadingUnloading(int amount, int id, Size size, boolean forLoading) {
         int amountForLoading;
-            amountForLoading = 0;
-            if (forLoading) {
-                if (size == Size.SMALL) {
-                    amountForLoading = random.nextInt(50);
-                } else if (size == Size.MEDIUM) {
-                    amountForLoading = random.nextInt(100);
-                } else if (size == Size.BIG) {
-                    amountForLoading = random.nextInt(150);
-                }
-                for (int i = 0; i < amountForLoading + 1; i++) {
-                    containerAmount.decrementAndGet();
-                }
-                train();
-                logger.info("The ship with id " + id + " was loaded by " + amountForLoading + " containers");
-                return amountForLoading;
-            } else if (!forLoading) {
-                for (int i = 0; i < amountForLoading + 1; i++) {
-                    containerAmount.incrementAndGet();
-                }
-                train();
-                logger.info("The ship with id " + id + " was unloaded by " + amount + " containers");
-                return 0;
+        amountForLoading = 0;
+        if (forLoading) {
+            if (size == Size.SMALL) {
+                amountForLoading = random.nextInt(size.getMaxCapacity());
+            } else if (size == Size.MEDIUM) {
+                amountForLoading = random.nextInt(size.getMaxCapacity());
+            } else if (size == Size.BIG) {
+                amountForLoading = random.nextInt(size.getMaxCapacity());
             }
+            containerAmount.addAndGet(-amountForLoading);
+            train();
+            logger.info("The ship with id " + id + " was loaded by " + amountForLoading + " containers");
+            return amountForLoading;
+        } else if (!forLoading) {
+            containerAmount.addAndGet(amount);
+            train();
+            logger.info("The ship with id " + id + " was unloaded by " + amount + " containers");
+            return 0;
+        }
         return amountForLoading;
     }
 
     private void train() {
         if (containerAmount.get() < 300) {
-            while (containerAmount.get() < 500) {
-                containerAmount.incrementAndGet();
-            }
+            containerAmount.addAndGet(200);
             logger.info("The train put 200 containers");
         } else if (containerAmount.get() > 3000) {
-            while (containerAmount.get()>2500) {
-                containerAmount.decrementAndGet();
-            }
+            containerAmount.addAndGet(-200);
             logger.info("The train take 200 containers");
         }
     }
@@ -125,6 +120,5 @@ public class Port {
         });
         portCapacity.setDaemon(true);
         portCapacity.start();
-
     }
 }
