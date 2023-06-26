@@ -16,10 +16,8 @@ public class Main {
             Pier pier = PierFactory.createPier();
             port.addPier(pier);
         }
-        Semaphore semaphore = new Semaphore(port.getPiers().size());
         for (int i = 1; i < 20; i++) {
             Ship ship = ShipFactory.createShip();
-            ship.semaphore = semaphore;
             Thread thread = new Thread(ship);
             System.out.println(ship);
             thread.start();

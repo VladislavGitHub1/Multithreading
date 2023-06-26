@@ -10,12 +10,14 @@ import java.util.concurrent.Semaphore;
 public class Ship implements Runnable {
     static Logger logger = LogManager.getLogger();
     private int id;
+    private final int TIME_TO_LOAD_ONE_CONTAINER = 30;
+    private final int TIME_TO_GO_TO_NEAREST_PIER = 100;
+
     private int maxCapacity;
     private int currentCapacity;
     private Size size;
 
     private boolean forLoading;
-    public Semaphore semaphore;
 
     public Ship(int id,Size size, int maxCapacity, int currentCapacity, boolean forLoading) {
         this.id = id;
@@ -28,34 +30,28 @@ public class Ship implements Runnable {
     @Override
     public void run() {
         Port port = Port.getInstance();
+        Pier pier = port.getPier();
+        int timeForGoToPier = 0;
+        logger.info("The ship with id " + this.id + " going to pier number " + pier.getId());
+        timeForGoToPier = pier.getId() * TIME_TO_GO_TO_NEAREST_PIER;
         try {
-            semaphore.acquire();
-            Pier pier = port.getPier();
-            int timeForGoToPier = 0;
-            logger.info("The ship with id " + this.id + " going to pier number " + pier.getId());
-            timeForGoToPier = pier.getId() * 100;
-            try {
-                Thread.sleep(timeForGoToPier);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            int timeForLoadingUnloading = 0;
-            if (forLoading) {
-                timeForLoadingUnloading = this.maxCapacity * 30;
-            } else {
-                timeForLoadingUnloading = currentCapacity * 30;
-            }
-            currentCapacity = port.loadingUnloading(currentCapacity, id, size, forLoading);
-            try {
-                Thread.sleep(timeForLoadingUnloading);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            port.addPier(pier);
-            semaphore.release();
+            Thread.sleep(timeForGoToPier);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        int timeForLoadingUnloading = 0;
+        if (forLoading) {
+            timeForLoadingUnloading = this.maxCapacity * TIME_TO_LOAD_ONE_CONTAINER;
+        } else {
+            timeForLoadingUnloading = currentCapacity * TIME_TO_LOAD_ONE_CONTAINER;
+        }
+        currentCapacity = port.loadingUnloading(currentCapacity, id, size, forLoading);
+        try {
+            Thread.sleep(timeForLoadingUnloading);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        port.addPier(pier);
 
     }
 

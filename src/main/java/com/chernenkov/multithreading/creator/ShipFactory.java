@@ -10,7 +10,7 @@ public class ShipFactory {
     static Random random = new Random();
     public static Ship createShip(){
         int currentCapacity = 0;
-        int currentId = IdGenerator.generateID();
+        int currentId = IdGenerator.generateId();
         Size[] sizes = Size.values();
         Size currentSize = sizes[random.nextInt(sizes.length)];
         int currentMaxCapacity = currentSize.getMaxCapacity();

@@ -1,7 +1,7 @@
 package com.chernenkov.multithreading.entity;
 
 public enum Size {
-    SMALL(50), MEDIUM(100), BIG(150);
+    SMALL(50), MEDIUM(100), LARGE(150);
     public int maxCapacity;
 
     Size(int maxCapacity){

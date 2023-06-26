@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -13,12 +14,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Port {
     static Logger logger = LogManager.getLogger();
+    Semaphore semaphore = new Semaphore(0);
     private static Port port;
     private AtomicInteger containerAmount = new AtomicInteger(500);
     private Queue<Pier> piers = new LinkedList<>();
     private static Lock lock = new ReentrantLock(true);
     private static AtomicBoolean isCreated = new AtomicBoolean(false);
     Random random = new Random();
+
 
     private Port() {
     }
@@ -43,8 +46,10 @@ public class Port {
     }
 
 
-    public boolean addPier(Pier pier) {
-        return piers.add(pier);
+    public void addPier(Pier pier) {
+
+        piers.add(pier);
+        semaphore.release();
     }
 
     public Queue<Pier> getPiers() {
@@ -55,15 +60,10 @@ public class Port {
         lock.lock();
         Pier pier = null;
         try {
-            if (!piers.isEmpty()) {
-                pier = piers.poll();
-            } else {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            semaphore.acquire();
+            pier = piers.poll();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }
@@ -78,7 +78,7 @@ public class Port {
                 amountForLoading = random.nextInt(size.getMaxCapacity());
             } else if (size == Size.MEDIUM) {
                 amountForLoading = random.nextInt(size.getMaxCapacity());
-            } else if (size == Size.BIG) {
+            } else if (size == Size.LARGE) {
                 amountForLoading = random.nextInt(size.getMaxCapacity());
             }
             containerAmount.addAndGet(-amountForLoading);
